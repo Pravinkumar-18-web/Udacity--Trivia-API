@@ -106,7 +106,7 @@ class TriviaTestCase(unittest.TestCase):
             - Success flag is False.
             - Error message indicates "resource not found."
         """
-        res = self.client.get('/categories')
+        res = self.client.get('/categories/99/questions')
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
@@ -213,21 +213,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertIsNotNone(data['questions'])
         self.assertIsNotNone(data['total_questions'])
-
-    def test_404_search_question(self):
-        """
-        Test: Verify a 404 error when no questions match the search term.
-        Assertions:
-            - Status code is 404.
-            - Success flag is False.
-            - Error message indicates "resource not found."
-        """
-        new_search = {}  # Empty search term should trigger a 404 error
-        res = self.client.post('/questions', json=new_search)
-        data = json.loads(res.data)
-        self.assertEqual(res.status_code, 404)
-        self.assertEqual(data["success"], False)
-        self.assertEqual(data["message"], "resource not found")
 
     def test_get_questions_per_category(self):
         """

@@ -97,15 +97,15 @@ def create_app(test_config=None):
 
     @app.route("/categories")
     def retrieve_categories():
-    #    categories = Category.query.order_by(Category.type).all()
+
         try:
             categories = Category.query.order_by(Category.type).all()
-            if len(categories) == 0:
-               abort(404, description="resource not found")
-
+          
             return jsonify({"success": True, "categories": {
                category.id: category.type for category in categories}, })
-        except:
+        
+        except Exception as e:
+            print(f"Error: {e}")
             abort(404, description="resource not found")
 
     """
@@ -118,23 +118,27 @@ def create_app(test_config=None):
 
     @app.route("/questions")
     def retrieve_questions():
-        selection = Question.query.order_by(Question.id).all()
-        current_questions = paginate_questions(request, selection)
+        try:
+            selection = Question.query.order_by(Question.id).all()
+            current_questions = paginate_questions(request, selection)
 
-        categories = Category.query.order_by(Category.type).all()
+            categories = Category.query.order_by(Category.type).all()
 
-        if len(current_questions) == 0:
+            if len(current_questions) == 0:
+                abort(404, description="resource not found")
+
+            return jsonify(
+                {
+                    "success": True,
+                    "questions": current_questions,
+                    "total_questions": len(selection),
+                    "categories": {
+                        category.id: category.type for category in categories},
+                    "current_category": None,
+                })
+        except Exception as e:
+            print(f"Error: {e}")
             abort(404, description="resource not found")
-
-        return jsonify(
-            {
-                "success": True,
-                "questions": current_questions,
-                "total_questions": len(selection),
-                "categories": {
-                    category.id: category.type for category in categories},
-                "current_category": None,
-            })
 
     """
     Endpoint: /questions/<question_id>
@@ -156,12 +160,11 @@ def create_app(test_config=None):
     """
     Endpoint: /questions
     Method: POST
-    Purpose: Add a new question or search for questions based on a search term.
+    Purpose: Add a new question.
     Response:
       - If adding: Confirms the creation of the question.
-      - If searching: Returns matching questions and the total number of matches.
     Errors:
-      - 400 - If the request is missing required fields or the search term is invalid.
+      - 400 - If the request is missing required fields
       - 422 - If the request cannot be processed.
     """
 
@@ -169,57 +172,78 @@ def create_app(test_config=None):
     def add_question():
         body = request.get_json()
 
-        if body is None:
-            abort(400, description="Request body must be JSON")
-
-        search_term = body.get("searchTerm", None)
-
         try:
-            if search_term is not None:
-                if not search_term.strip():
-                    abort(400, description="Search term cannot be empty")
+            required_fields = (
+                "question", "answer", "difficulty", "category")
+            if not all(field in body for field in required_fields):
+                abort(400, description="Missing required fields")
 
-                search_results = Question.query.filter(
-                    Question.question.ilike(f"%{search_term}%")
-                ).all()
+            new_question = body["question"]
+            new_answer = body["answer"]
+            new_difficulty = body["difficulty"]
+            new_category = body["category"]
 
-                if len(search_results) == 0:  # Return 404 if no results are found
-                    abort(404, description="No questions found for the given search term")
-                    
-                return jsonify(
-                    {
-                        "success": True,
-                        "questions": [
-                            question.format() for question in search_results],
-                        "total_questions": len(search_results),
-                        "current_category": None,
-                    })
+            if not new_question.strip() or not new_answer.strip():
+                abort(400, description="Question and Answer cannot be empty or only whitespace")
 
-            else:
-                required_fields = (
-                    "question", "answer", "difficulty", "category")
-                if not all(field in body for field in required_fields):
-                    abort(400, description="Missing required fields")
+            question = Question(
+                question=new_question,
+                answer=new_answer,
+                difficulty=int(new_difficulty),
+                category=int(new_category),
+            )
+            question.insert()
 
-                new_question = body["question"]
-                new_answer = body["answer"]
-                new_difficulty = body["difficulty"]
-                new_category = body["category"]
+            return jsonify(
+                {
+                    "success": True,
+                    "created": question.id,
+                }
+            ),201
+        except Exception as e:
+            print(f"Error: {e}")
+            abort(422, description="Unprocessable request")
 
-                question = Question(
-                    question=new_question,
-                    answer=new_answer,
-                    difficulty=int(new_difficulty),
-                    category=int(new_category),
-                )
-                question.insert()
+    """
+    Endpoint: /questions/search
+    Method: POST
+    Purpose: search for questions based on a search term.
+    Response:
+      - Returns matching questions and the total number of matches.
+    Errors:
+      - 400 - If the request is missing required fields or the search term is invalid.
+      - 422 - If the request cannot be processed.
+    """
 
-                return jsonify(
-                    {
-                        "success": True,
-                        "created": question.id,
-                    }
-                )
+    @app.route('/questions/search', methods=['POST'])
+    def search_questions():
+        
+        data = request.get_json()
+        search_term = data.get('searchTerm', '').strip()
+
+        if not search_term:
+            abort(400, description="Search term is required")
+        try:
+            # Search questions in the database
+            results = Question.query.filter(
+                Question.question.ilike(f"%{search_term}%")
+            ).all()
+
+            if not results:
+                return jsonify({
+                    "success": True,
+                    "questions": [],
+                    "total_questions": 0
+                }), 200
+
+            # Format the results
+            formatted_questions = [q.format() for q in results]
+
+            return jsonify({
+                "success": True,
+                "questions": formatted_questions,
+                "total_questions": len(formatted_questions)
+            }), 200
 
         except Exception as e:
             print(f"Error: {e}")

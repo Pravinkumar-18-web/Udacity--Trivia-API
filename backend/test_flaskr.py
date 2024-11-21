@@ -17,7 +17,11 @@ import unittest
 from sqlalchemy.orm import sessionmaker
 from flaskr import create_app
 from models import db, Question, Category
+from dotenv import load_dotenv
+import os
 
+# Load environment variables from the .env file
+load_dotenv()
 
 class TriviaTestCase(unittest.TestCase):
     """This class represents the trivia test case"""
@@ -30,10 +34,10 @@ class TriviaTestCase(unittest.TestCase):
             - Initializes the app with the test configuration.
             - Creates all required database tables for testing.
         """
-        self.database_name = "trivia_test"
-        self.database_user = "pravi"
-        self.database_password = "1898"
-        self.database_host = "localhost:5432"
+        self.database_name = os.getenv('DB_NAME_TEST')
+        self.database_user = os.getenv('DB_USER')
+        self.database_password = os.getenv('DB_PASSWORD')
+        self.database_host = os.getenv('DB_HOST')
         self.database_path = f"postgresql://{self.database_user}:{self.database_password}@{self.database_host}/{self.database_name}"
 
         self.app = create_app({
@@ -135,7 +139,7 @@ class TriviaTestCase(unittest.TestCase):
         with self.app.app_context():
             total_questions_after = len(Question.query.all())
 
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.status_code, 201)
         self.assertEqual(data["success"], True)
         self.assertEqual(total_questions_after, total_questions_before + 1)
 
@@ -207,12 +211,47 @@ class TriviaTestCase(unittest.TestCase):
             - The 'total_questions' field is populated.
         """
         new_search = {'searchTerm': 'a'}
-        res = self.client.post('/questions', json=new_search)
+        res = self.client.post('/questions/search', json=new_search)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertIsNotNone(data['questions'])
         self.assertIsNotNone(data['total_questions'])
+
+    def test_400_search_question(self):
+        """
+        Test: Verify a 400 error when missing or empty search term 
+              for the search questions endpoint.
+        Assertions:
+            - Status code is 400.
+            - Success flag is False.
+            - Error message indicates "Search term is required."
+        """
+        new_search = {}  # Empty search term should trigger a 404 error
+        res = self.client.post('/questions/search', json=new_search)
+        data = json.loads(res.data)
+        print(res.data)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "Search term is required")
+
+    def test_search_no_results(self):
+        """
+        Test: Verify searching for questions by term returns no results.
+        Assertions:
+            - Status code is 200.
+            - Success flag is True.
+            - The 'questions' field contains results based on search term.
+            - The 'total_questions' field is populated.
+        """
+        no_result_search = {"searchTerm": "dog"}
+        res = self.client.post('/questions/search', json=no_result_search)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(data['questions'], [])
+        self.assertEqual(data['total_questions'], 0)
+
 
     def test_get_questions_per_category(self):
         """
@@ -285,7 +324,7 @@ class TriviaTestCase(unittest.TestCase):
             - 'created' field contains the new category's ID.
             - The created category is valid (check type).
         """
-        new_category = {'category': 'Rocketry'}
+        new_category = {'category': 'Rocket'}
         res = self.client.post('/categories', json=new_category)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)

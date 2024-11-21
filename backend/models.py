@@ -6,7 +6,7 @@ import os
 # Load environment variables from the .env file
 load_dotenv()
 
-database_name = os.getenv('DB_NAME')
+database_name = os.getenv('DB_NAME_DEV')
 database_user = os.getenv('DB_USER')
 database_password = os.getenv('DB_PASSWORD')
 database_host = os.getenv('DB_HOST')

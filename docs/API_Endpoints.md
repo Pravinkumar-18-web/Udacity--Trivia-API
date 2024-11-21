@@ -148,7 +148,7 @@ Start a quiz round with a specified category.
   }
 }
 ```
-### 7. POST /questions
+### 7. POST /questions/search
 Sends a post request in order to search for a specific question by search term
 
 **Request Body:**
@@ -255,7 +255,7 @@ curl -X DELETE http://127.0.0.1:5000/questions/25
 ```
 
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"searchTerm":"American artist"}' http://127.0.0.1:5000/questions
+curl -X POST -H "Content-Type: application/json" -d '{"searchTerm":"American artist"}' http://127.0.0.1:5000/questions/search
 ```
 
 ```bash

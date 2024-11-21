@@ -17,9 +17,25 @@ Fetch a paginated list of questions.
 ```json
 {
   "success": true,
-  "questions": [ ... ],
-  "total_questions": 50,
-  "categories": { ... }
+  "questions": [
+    {
+      "id": 1,
+      "question": "This is a question",
+      "answer": "This is an answer",
+      "difficulty": 5,
+      "category": 2
+    }
+  ],
+  "totalQuestions": 100,
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  },
+  "currentCategory": "History"
 }
 ```
 ### 2. POST /questions
@@ -91,7 +107,17 @@ Fetch questions for a specific category.
 ```json
 {
   "success": true,
-  "questions": [ ... ],
+  "questions": [
+    {
+      "id": 1,
+      "question": "This is a question",
+      "answer": "This is an answer",
+      "difficulty": 5,
+      "category": 2
+    }
+  ],
+  "currentCategory": "History"
+},
   "total_questions": 15,
   "current_category": { "id": 1, "type": "Science" }
 }

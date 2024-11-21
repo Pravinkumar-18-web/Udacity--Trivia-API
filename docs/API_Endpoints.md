@@ -1,7 +1,5 @@
 # Trivia API Documentation
-
 ## API Endpoints
-
 ### 1. GET /questions
 Fetch a paginated list of questions.
 

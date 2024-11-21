@@ -1,4 +1,4 @@
-
+theme: jekyll-theme-cayman
 title: "My Trivia App"
 description: "A fun trivia API app with various quiz questions."
 url: "https://your-username.github.io/Trivia-API/"
@@ -16,4 +16,3 @@ include:
   - LICENSE.md
   - CONTRIBUTING.md
 
-theme: jekyll-theme-cayman

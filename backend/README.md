@@ -1,6 +1,15 @@
 # Backend - Trivia API
+The Trivia App is a quiz-based application that allows users to browse questions, view categories, search for questions, and play quizzes. It is built using Flask for the backend and PostgreSQL for the database, with a RESTful API that supports CRUD operations. The app provides endpoints for managing questions, categories, and conducting quizzes.
+
+Features:-
+Browse Questions: View paginated lists of questions.
+Search Questions: Search questions based on a search term.
+Category Management: View, create, and retrieve questions by category.
+Quiz Functionality: Play a quiz with questions from a specified category, with no repeating questions until all questions have been used.
+Error Handling: Return appropriate HTTP status codes and messages for errors like 404, 422, and 400.
 
 ## Setting up the Backend
+
 
 ### Install Dependencies
 

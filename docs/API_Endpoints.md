@@ -114,8 +114,7 @@ Fetch questions for a specific category.
       "category": 2
     }
   ],
-  "currentCategory": "History"
-},
+  "currentCategory": "History"s,
   "total_questions": 15,
   "current_category": { "id": 1, "type": "Science" }
 }
